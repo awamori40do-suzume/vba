@@ -1,0 +1,82 @@
+Sub Message()
+    ' データを取得する
+    Dim ws As Worksheet
+    Dim wsDict As Worksheet
+    Dim beforeData As Variant
+    Dim afterData As Variant
+    Dim memoData As Variant
+    Dim maxRow As Long
+    Dim lastRow As Long
+    Dim wordValue As Long
+    Dim data As Variant
+    Dim data2() As Variant
+    Dim trigger As String
+    Dim i As Long
+    Dim j As Long
+    Dim k As Long
+    Dim str As String
+    Dim copy_str As String
+    Dim memo As String
+
+    ' シートを取得
+    Set wsDict = ThisWorkbook.Sheets("dictionary")
+    Set ws = ThisWorkbook.Sheets("入力シート")
+    
+    ' 変換前辞書を取得
+    beforeData = wsDict.Range("A1:A" & wsDict.Cells(wsDict.Rows.Count, "A").End(xlUp).Row).Value
+    ' 変換後辞書を取得
+    afterData = wsDict.Range("B1:B" & wsDict.Cells(wsDict.Rows.Count, "B").End(xlUp).Row).Value
+    ' 備考を取得
+    memoData = wsDict.Range("C1:C" & wsDict.Cells(wsDict.Rows.Count, "C").End(xlUp).Row).Value
+    
+    ' 登録された単語数を列の数から取得
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    wordValue = UBound(beforeData, 1)
+    
+    ' データを取得
+    data = ws.Range("A3:A" & lastRow).Value
+    ReDim data2(1 To UBound(data, 1), 1 To 1)
+    
+    ' トリガー取得
+    trigger = ws.Range("C2").Value
+    
+    ' 配列から値を取り出し
+    For j = 1 To UBound(data, 1)
+        k = j + 2
+        str = data(j, 1)
+        copy_str = str
+        memo = ""
+        
+        For i = 1 To wordValue
+            If beforeData(i, 1) <> "" Then
+                ' 備考があるか確認し、あれば追加
+                If memoData(i, 1) <> "" And InStr(1, str, beforeData(i, 1)) > 0 Then
+                    memo = memo & "※" & afterData(i, 1) & "：" & memoData(i, 1)
+                End If
+                str = Replace(str, beforeData(i, 1), "*" & afterData(i, 1) & "* ")
+                copy_str = Replace(copy_str, beforeData(i, 1), afterData(i, 1))
+                str = ToHalfWidth(str)
+                copy_str = ToHalfWidth(copy_str)
+            End If
+        Next i
+        
+        data2(j, 1) = copy_str
+    Next j
+    
+    ' データを書き込む
+    ws.Range("B3:B" & lastRow).Value = data2
+    Debug.Print k
+    Debug.Print trigger
+End Sub
+
+Function ToHalfWidth(ByVal str As String) As String
+    Dim i As Long
+    Dim c As String
+    For i = 1 To Len(str)
+        c = Mid(str, i, 1)
+        If AscW(c) >= 65281 And AscW(c) <= 65374 Then
+            str = Replace(str, c, ChrW(AscW(c) - 65248))
+        End If
+    Next i
+    ToHalfWidth = str
+End Function
