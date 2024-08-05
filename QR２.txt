@@ -16,19 +16,25 @@ Sub GenerateAndSaveQRCode()
         textToEncode = cell.Value
 
         If textToEncode <> "" Then
+            On Error Resume Next ' エラーハンドリング開始
             ' 新しいバーコードコントロールを作成
-            Set barcode = ws.OLEObjects.Add(ClassType:="BARCODE.BarCodeCtrl.16", _
+            Set barcode = ws.OLEObjects.Add(ClassType:="MSBarcode.BarCodeCtrl.16", _
                                              Link:=False, _
                                              DisplayAsIcon:=False, _
                                              Left:=cell.Offset(0, 1).Left, _
                                              Top:=cell.Top, _
                                              Width:=100, _
                                              Height:=100)
+            If Err.Number <> 0 Then
+                MsgBox "バーコードオブジェクトを挿入できませんでした。エラー番号: " & Err.Number & " - " & Err.Description
+                Exit Sub
+            End If
+            On Error GoTo 0 ' エラーハンドリング終了
 
             ' バーコードコントロールのプロパティを設定
             With barcode.Object
-                .Style = 11 ' QR Code
-                .Value = textToEncode
+                .Symbology = 11 ' QR Code
+                .Text = textToEncode
                 .ShowText = False
                 .AutoSize = True
             End With
