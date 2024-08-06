@@ -1,0 +1,70 @@
+Sub GenerateQRCode()
+    Dim objOLE As OLEObject 'OLEオブジェクトにセル(文字列)へのリンクを設定します。
+    Dim objQR As Object 'バーコードオブジェクトをSetします。BARCODELib.BarCodeCtrl の代わりに Object 型を使用します。
+    Dim ws As Worksheet
+    Dim qrFilePath As String
+    Dim currentDir As String
+
+    ' 現在のシートを設定
+    Set ws = ActiveSheet
+    
+    ' カレントディレクトリを取得
+    currentDir = ThisWorkbook.Path
+    
+    ' QRコード画像の保存パスを設定
+    qrFilePath = currentDir & "\QRCode.png"
+    
+    ' バーコードコントロールを作成 (位置はLeft 20, Top 20、サイズはWidth 50, Height 50)
+    ActiveSheet.OLEObjects.Add(ClassType:="BARCODE.BarCodeCtrl.1", _
+                    Left:=20, Top:=20, Width:=150, Height:=150).Select
+
+    ' 作成したバーコードコントロールを Set
+    Set objOLE = Selection
+    Set objQR = objOLE.Object
+
+    ' バーコードコントロールのプロパティを設定
+    With objQR
+        .Style = 110 ' バーコードの種類を110(QRコード)に設定
+        .Data = Range("A1").Value ' QRコードに変換するデータを指定
+    End With
+
+    ' OLEオブジェクトのプロパティを設定
+    With objOLE
+        .LinkedCell = "A1" ' セルへのリンクを設定
+    End With
+
+    ' QRコードを画像として保存
+    SaveOLEObjectAsImage objOLE, qrFilePath
+
+    MsgBox "QRコードの生成と保存が完了しました。"
+End Sub
+
+' OLEオブジェクトを画像として保存するサブルーチン
+Sub SaveOLEObjectAsImage(objOLE As OLEObject, filePath As String)
+    Dim shape As Shape
+    Dim tempSheet As Worksheet
+    Dim img As Object
+    
+    ' 一時シートを作成
+    Set tempSheet = ThisWorkbook.Sheets.Add
+    
+    ' OLEオブジェクトを一時シートにコピー
+    objOLE.Copy
+    tempSheet.Paste
+    
+    ' 一時シートの最初のシェイプを取得
+    Set shape = tempSheet.Shapes(1)
+    
+    ' シェイプを画像として保存
+    shape.CopyPicture Appearance:=xlScreen, Format:=xlPicture
+    Set img = CreateObject("MSPaint.Application")
+    img.Visible = True
+    img.Paste
+    img.SaveAs filePath, 2 ' 2 = png format
+    img.Quit
+    
+    ' 一時シートを削除
+    Application.DisplayAlerts = False
+    tempSheet.Delete
+    Application.DisplayAlerts = True
+End Sub
