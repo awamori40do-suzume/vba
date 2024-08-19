@@ -5,6 +5,7 @@ Sub FillDatesInMonth()
     Dim baseDate As Date
     Dim i As Integer
     Dim lastDay As Integer
+    Dim monthColor As Long
     
     ' シートを取得
     Set ws = ActiveSheet ' もしくは、特定のシートを指定したい場合は Set ws = ThisWorkbook.Sheets("Sheet1") のように指定
@@ -38,17 +39,34 @@ Sub FillDatesInMonth()
     ' 月の最終日を取得
     lastDay = Day(DateSerial(Year(baseDate), Month(baseDate) + 1, 0))
     
+    ' 月ごとの色を設定
+    Select Case Month(baseDate)
+        Case 1, 4, 7, 10
+            monthColor = RGB(255, 200, 200) ' 赤系
+        Case 2, 5, 8, 11
+            monthColor = RGB(200, 255, 200) ' 緑系
+        Case 3, 6, 9, 12
+            monthColor = RGB(200, 200, 255) ' 青系
+    End Select
+    
     ' 1日から最終日までB列に入力
     For i = 1 To lastDay
         ws.Cells(1, i + 1).Value = Format(baseDate + (i - 1), "m/d")
-        ' B2以降に日本語の曜日を入力
         ws.Cells(2, i + 1).Value = Format(baseDate + (i - 1), "aaa")
+        
+        ' B3に月を入力し、背景色を設定
+        ws.Cells(3, i + 1).Interior.Color = monthColor
     Next i
+        ws.Cells(3, 2).Value = Month(baseDate) & "月"
     
     ' 最終日の次の列以降は空白にする
     For i = lastDay + 1 To 31
         ws.Cells(1, i + 1).ClearContents
         ws.Cells(2, i + 1).ClearContents
+        ws.Cells(3, i + 1).ClearContents
+        
+        ' B3の背景色をクリア
+        ws.Cells(3, i + 1).Interior.ColorIndex = xlNone
     Next i
 End Sub
 
