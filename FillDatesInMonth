@@ -1,0 +1,54 @@
+Sub FillDatesInMonth()
+    Dim ws As Worksheet
+    Dim thisYear As String
+    Dim monthInput As Integer
+    Dim baseDate As Date
+    Dim i As Integer
+    Dim lastDay As Integer
+    
+    ' シートを取得
+    Set ws = ActiveSheet ' もしくは、特定のシートを指定したい場合は Set ws = ThisWorkbook.Sheets("Sheet1") のように指定
+    
+    ' 年度のカレンダーを作成するための西暦を入力
+    thisYear = Application.InputBox("西暦を半角4桁の数字で入力してください。")
+    
+    ' キャンセル時の処理
+    If thisYear = False Then
+        Exit Sub
+    End If
+    
+    ' 4桁でない場合の処理
+    If Len(thisYear) <> 4 Then
+        MsgBox ("西暦は4桁で入力してください。" & vbCrLf & "作業を中止します。")
+        Exit Sub
+    End If
+    
+    ' 月を入力
+    monthInput = Application.InputBox("月を1～12の範囲で入力してください。", Type:=1)
+    
+    ' 月が範囲外の場合の処理
+    If monthInput < 1 Or monthInput > 12 Then
+        MsgBox ("月は1～12の範囲で入力してください。" & vbCrLf & "作業を中止します。")
+        Exit Sub
+    End If
+    
+    ' 基準日を取得 (入力された年と月の1日)
+    baseDate = DateSerial(thisYear, monthInput, 1)
+    
+    ' 月の最終日を取得
+    lastDay = Day(DateSerial(Year(baseDate), Month(baseDate) + 1, 0))
+    
+    ' 1日から最終日までB列に入力
+    For i = 1 To lastDay
+        ws.Cells(1, i + 1).Value = Format(baseDate + (i - 1), "m/d")
+        ' B2以降に日本語の曜日を入力
+        ws.Cells(2, i + 1).Value = Format(baseDate + (i - 1), "aaa")
+    Next i
+    
+    ' 最終日の次の列以降は空白にする
+    For i = lastDay + 1 To 31
+        ws.Cells(1, i + 1).ClearContents
+        ws.Cells(2, i + 1).ClearContents
+    Next i
+End Sub
+
