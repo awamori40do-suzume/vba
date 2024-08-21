@@ -2,25 +2,31 @@ Sub FillDatesInMonth()
     Dim ws As Worksheet
     Dim thisYear As String
     Dim monthInput As Integer
+    Dim dayInput As Integer
     Dim baseDate As Date
     Dim i As Integer
     Dim lastDay As Integer
     Dim monthColor As Long
+    Dim LastColumn As Long
+    Dim InsertPos As Long
+    Dim colDate As Date
+    Dim found As Boolean
     
     ' シートを取得
-    Set ws = ActiveSheet ' もしくは、特定のシートを指定したい場合は Set ws = ThisWorkbook.Sheets("Sheet1") のように指定
+    Set ws = ActiveSheet
+    
+    ' 最後の入力済み列を取得
+    LastColumn = ws.Cells(1, Columns.Count).End(xlToLeft).Column
     
     ' 年度のカレンダーを作成するための西暦を入力
     thisYear = Application.InputBox("西暦を半角4桁の数字で入力してください。")
     
     ' キャンセル時の処理
-    If thisYear = False Then
-        Exit Sub
-    End If
+    If thisYear = False Then Exit Sub
     
     ' 4桁でない場合の処理
     If Len(thisYear) <> 4 Then
-        MsgBox ("西暦は4桁で入力してください。" & vbCrLf & "作業を中止します。")
+        MsgBox "西暦は4桁で入力してください。" & vbCrLf & "作業を中止します。"
         Exit Sub
     End If
     
@@ -29,12 +35,21 @@ Sub FillDatesInMonth()
     
     ' 月が範囲外の場合の処理
     If monthInput < 1 Or monthInput > 12 Then
-        MsgBox ("月は1～12の範囲で入力してください。" & vbCrLf & "作業を中止します。")
+        MsgBox "月は1～12の範囲で入力してください。" & vbCrLf & "作業を中止します。"
         Exit Sub
     End If
     
-    ' 基準日を取得 (入力された年と月の1日)
-    baseDate = DateSerial(thisYear, monthInput, 1)
+    ' 日付を入力
+    dayInput = Application.InputBox("日を1～31の範囲で入力してください。", Type:=1)
+    
+    ' 日付が範囲外の場合の処理
+    If dayInput < 1 Or dayInput > 31 Then
+        MsgBox "日は1～31の範囲で入力してください。" & vbCrLf & "作業を中止します。"
+        Exit Sub
+    End If
+    
+    ' 基準日を取得 (入力された年、月、日付)
+    baseDate = DateSerial(CInt(thisYear), monthInput, dayInput)
     
     ' 月の最終日を取得
     lastDay = Day(DateSerial(Year(baseDate), Month(baseDate) + 1, 0))
@@ -49,24 +64,43 @@ Sub FillDatesInMonth()
             monthColor = RGB(200, 200, 255) ' 青系
     End Select
     
-    ' 1日から最終日までB列に入力
-    For i = 1 To lastDay
-        ws.Cells(1, i + 1).Value = Format(baseDate + (i - 1), "m/d")
-        ws.Cells(2, i + 1).Value = Format(baseDate + (i - 1), "aaa")
+    ' すでにその月が存在するかをチェック
+    found = False
+    For i = 2 To LastColumn
+        If IsDate(ws.Cells(1, i).Value) Then
+            colDate = DateSerial(Year(baseDate), Month(ws.Cells(1, i).Value), Day(ws.Cells(1, i).Value))
+            If Month(colDate) = monthInput Then
+                MsgBox "指定された月は既に存在します。", vbExclamation
+                Exit Sub
+            ElseIf colDate > baseDate Then
+                InsertPos = i
+                found = True
+                Exit For
+            End If
+        End If
+    Next i
+    
+    ' すでに存在する場合、列をシフトして挿入
+    If found Then
+        ws.Range(ws.Cells(1, InsertPos), ws.Cells(3, LastColumn)).Insert Shift:=xlToRight
+    Else
+        InsertPos = LastColumn + 1
+    End If
+    
+    ' 指定された日付から最終日まで指定した位置に入力
+    For i = dayInput To lastDay
+        ws.Cells(1, InsertPos + (i - dayInput)).Value = Format(baseDate + (i - dayInput), "m/d")
+        ws.Cells(2, InsertPos + (i - dayInput)).Value = Format(baseDate + (i - dayInput), "aaa")
         
         ' B3に月を入力し、背景色を設定
-        ws.Cells(3, i + 1).Interior.Color = monthColor
+        ws.Cells(3, InsertPos + (i - dayInput)).Interior.Color = monthColor
     Next i
-        ws.Cells(3, 2).Value = Month(baseDate) & "月"
     
-    ' 最終日の次の列以降は空白にする
-    For i = lastDay + 1 To 31
-        ws.Cells(1, i + 1).ClearContents
-        ws.Cells(2, i + 1).ClearContents
-        ws.Cells(3, i + 1).ClearContents
-        
-        ' B3の背景色をクリア
-        ws.Cells(3, i + 1).Interior.ColorIndex = xlNone
-    Next i
+    ' B3のセルに月を表示
+    ws.Cells(3, InsertPos).Value = Month(baseDate) & "月"
+    
+    ' 最終日以降の列を空白にすることなく詰めてスキップ
+    If lastDay < 31 Then
+        ws.Range(ws.Cells(1, InsertPos + (lastDay - dayInput) + 1), ws.Cells(3, LastColumn)).Delete Shift:=xlToLeft
+    End If
 End Sub
-
