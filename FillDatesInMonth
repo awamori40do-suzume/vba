@@ -104,3 +104,4 @@ Sub FillDatesInMonth()
         ws.Range(ws.Cells(1, InsertPos + (lastDay - dayInput) + 1), ws.Cells(3, LastColumn)).Delete Shift:=xlToLeft
     End If
 End Sub
+
