@@ -105,3 +105,6 @@ Sub FillDatesInMonth()
     End If
 End Sub
 
+Sub FillDatesInMonth2()
+=NOT(ISERROR(VLOOKUP(A1, 祝日!$A:$A, 1, FALSE)))
+End Sub
