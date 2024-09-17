@@ -1,4 +1,4 @@
-Sub RemoveDuplicatesAndCount()
+Sub InsertColumnAndRemoveDuplicates()
     Dim ws As Worksheet
     Dim lastRow As Long
     Dim i As Long
@@ -9,6 +9,9 @@ Sub RemoveDuplicatesAndCount()
     Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
     lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
     Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
+    
+    ' B列に列を挿入
+    ws.Columns(2).Insert Shift:=xlToRight
     
     ' A列のデータを走査し、重複を削除してカウント
     For i = 1 To lastRow
