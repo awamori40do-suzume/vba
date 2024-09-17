@@ -1,0 +1,30 @@
+Sub RemoveDuplicatesAndCount()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim uniqueDict As Object
+    Dim key As Variant
+    Dim rowIndex As Long
+    
+    Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
+    Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
+    
+    ' A列のデータを走査し、重複を削除してカウント
+    For i = 1 To lastRow
+        key = ws.Cells(i, 1).Value
+        If Not uniqueDict.Exists(key) Then
+            uniqueDict.Add key, 1 ' 初めての値を追加
+        Else
+            uniqueDict(key) = uniqueDict(key) + 1 ' カウントを増加
+        End If
+    Next i
+    
+    ' B列とC列にデータを書き込み
+    rowIndex = 1
+    For Each key In uniqueDict.Keys
+        ws.Cells(rowIndex, 2).Value = key ' B列に値を転記
+        ws.Cells(rowIndex, 3).Value = uniqueDict(key) ' C列にカウントを転記
+        rowIndex = rowIndex + 1
+    Next key
+End Sub
