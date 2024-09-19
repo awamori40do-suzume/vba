@@ -1,52 +1,40 @@
-Sub InsertColumnAndRemoveDuplicatesMatchWithColumnD()
+Sub RemoveDuplicatesAndCount()
     Dim ws As Worksheet
-    Dim lastRowA As Long, lastRowB As Long, lastRowD As Long
+    Dim lastRow As Long
     Dim i As Long
     Dim uniqueDict As Object
     Dim key As Variant
+    Dim items() As String
+    Dim item As Variant
     Dim rowIndex As Long
-    Dim notInD As Collection
     
     Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
-    lastRowA = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
-    lastRowD = ws.Cells(ws.Rows.Count, 4).End(xlUp).Row ' D列の最終行を取得
-    lastRowB = 1 ' B列のデータ書き込み用の初期値
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
     Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
-    Set notInD = New Collection ' D列に存在しないデータを管理するコレクション
     
-    ' B列に列を挿入
-    ws.Columns(2).Insert Shift:=xlToRight
-    
-    ' A列のデータを走査し、重複を削除してカウント
-    For i = 1 To lastRowA
-        key = ws.Cells(i, 1).Value
-        If Not uniqueDict.Exists(key) Then
-            uniqueDict.Add key, 1 ' 初めての値を追加
-        End If
+    ' A列のデータを走査し、カンマで区切って個別にカウント
+    For i = 1 To lastRow
+        ' A列のセルの値をカンマで分割
+        items = Split(ws.Cells(i, 1).Value, ",")
+        
+        ' 分割した各項目を走査してカウント
+        For Each item In items
+            item = Trim(item) ' 余分なスペースを削除
+            If item <> "" Then
+                If Not uniqueDict.Exists(item) Then
+                    uniqueDict.Add item, 1 ' 初めての値を追加
+                Else
+                    uniqueDict(item) = uniqueDict(item) + 1 ' カウントを増加
+                End If
+            End If
+        Next item
     Next i
     
-    ' D列と照合し、同じデータがあればB列に同じ位置で転記
-    For i = 1 To lastRowD
-        key = ws.Cells(i, 4).Value ' D列の値
-        If uniqueDict.Exists(key) Then
-            ws.Cells(i, 2).Value = key ' D列の位置に対応するB列に転記
-            uniqueDict.Remove key ' 転記したものは削除
-        End If
-    Next i
-    
-    ' D列に存在しないデータをB列の末尾に追加
-    For Each key In uniqueDict.Keys
-        ws.Cells(lastRowD + lastRowB, 2).Value = key
-        lastRowB = lastRowB + 1
-    Next key
-    
-    ' C列にB列の出現回数をカウント
+    ' B列とC列にデータを書き込み
     rowIndex = 1
     For Each key In uniqueDict.Keys
+        ws.Cells(rowIndex, 2).Value = key ' B列に値を転記
         ws.Cells(rowIndex, 3).Value = uniqueDict(key) ' C列にカウントを転記
         rowIndex = rowIndex + 1
     Next key
-    
-    ' F列を非表示にする
-    ws.Columns(6).Hidden = True
 End Sub
