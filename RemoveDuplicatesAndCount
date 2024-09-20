@@ -2,6 +2,7 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     Dim ws As Worksheet
     Dim testWorkbook As Workbook
     Dim testFilePath As String
+    Dim testFileName As String
     Dim lastRowA As Long, lastRowI As Long
     Dim i As Long, rowIndex As Long
     Dim uniqueDict As Object
@@ -13,30 +14,38 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     ' 現在のブックのシートを設定
     Set ws = ThisWorkbook.Sheets(1)
     
-    ' 同じディレクトリにあるテスト.xslmファイルのパスを取得
-    testFilePath = ThisWorkbook.Path & "\テスト.xslm"
+    ' InputBoxでテストファイルの名前を入力させる
+    testFileName = InputBox("テストファイルの名前を入力してください（拡張子も含めてください）", "ファイル名の入力")
     
-    ' テスト.xslmを開く
+    If testFileName = "" Then
+        MsgBox "ファイル名が入力されていません。処理を中止します。", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 同じディレクトリにある指定されたファイルのパスを取得
+    testFilePath = ThisWorkbook.Path & "\" & testFileName
+    
+    ' 指定されたファイルを開く
     On Error Resume Next
     Set testWorkbook = Workbooks.Open(testFilePath)
     On Error GoTo 0
     
     If testWorkbook Is Nothing Then
-        MsgBox "テスト.xslmファイルが見つかりません。", vbExclamation
+        MsgBox "指定されたファイルが見つかりません: " & testFileName, vbExclamation
         Exit Sub
     End If
     
-    ' テスト.xslmのシート1を取得
+    ' テストファイルのシート1を取得
     Dim testWs As Worksheet
     Set testWs = testWorkbook.Sheets(1)
     
-    ' テスト.xslmのA列の最終行を取得
+    ' テストファイルのA列の最終行を取得
     lastRowA = testWs.Cells(testWs.Rows.Count, 1).End(xlUp).Row
     
     ' Dictionaryオブジェクトを作成
     Set uniqueDict = CreateObject("Scripting.Dictionary")
     
-    ' テスト.xslmのA列のデータを走査し、カンマで区切って個別にカウント
+    ' テストファイルのA列のデータを走査し、カンマで区切って個別にカウント
     For i = 1 To lastRowA
         ' A列のセルの値をカンマで分割
         items = Split(testWs.Cells(i, 1).Value, ",")
@@ -54,7 +63,7 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
         Next item
     Next i
     
-    ' テスト.xslmを閉じる
+    ' テストファイルを閉じる
     testWorkbook.Close False
     
     ' I列で「合計」を探す
