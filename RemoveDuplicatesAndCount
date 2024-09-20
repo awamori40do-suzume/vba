@@ -163,4 +163,51 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
         ' セルの挿入 (「合計」の上に新しい行を追加)
         ws.Rows(rowIndex).Insert Shift:=xlDown
         ws.Cells(rowIndex, 9).Value = key ' I列に値を追加
-        ws.Cells(rowIndex, 10).Value = uniqueDictA(key)
+        ws.Cells(rowIndex, 10).Value = uniqueDictA(key) ' J列にカウントを書き込み
+        rowIndex = rowIndex + 1
+    Next key
+    
+    ' K列に存在するデータに対応してカウントをL列に書き込み (B列のデータ)
+    For i = 1 To lastRowK
+        key = ws.Cells(i, 11).Value ' K列の値
+        If uniqueDictB.Exists(key) Then
+            ws.Cells(i, 12).Value = uniqueDictB(key) ' L列にカウントを書き込み
+            uniqueDictB.Remove key ' カウント済みのデータは削除
+        Else
+            ws.Cells(i, 12).Value = 0 ' B列に存在しない場合はカウントを0とする
+        End If
+    Next i
+    
+    ' K列に存在しないB列の品目を「合計」の上に追加
+    rowIndex = totalRowK ' 「合計」の位置を基準にする
+    For Each key In uniqueDictB.Keys
+        ' セルの挿入 (「合計」の上に新しい行を追加)
+        ws.Rows(rowIndex).Insert Shift:=xlDown
+        ws.Cells(rowIndex, 11).Value = key ' K列に値を追加
+        ws.Cells(rowIndex, 12).Value = uniqueDictB(key) ' L列にカウントを書き込み
+        rowIndex = rowIndex + 1
+    Next key
+    
+    ' M列に存在するデータに対応してカウントをN列に書き込み (C列のデータ)
+    For i = 1 To lastRowM
+        key = ws.Cells(i, 13).Value ' M列の値
+        If uniqueDictC.Exists(key) Then
+            ws.Cells(i, 14).Value = uniqueDictC(key) ' N列にカウントを書き込み
+            uniqueDictC.Remove key ' カウント済みのデータは削除
+        Else
+            ws.Cells(i, 14).Value = 0 ' C列に存在しない場合はカウントを0とする
+        End If
+    Next i
+    
+    ' M列に存在しないC列の品目を「合計」の上に追加
+    rowIndex = totalRowM ' 「合計」の位置を基準にする
+    For Each key In uniqueDictC.Keys
+        ' セルの挿入 (「合計」の上に新しい行を追加)
+        ws.Rows(rowIndex).Insert Shift:=xlDown
+        ws.Cells(rowIndex, 13).Value = key ' M列に値を追加
+        ws.Cells(rowIndex, 14).Value = uniqueDictC(key) ' N列にカウントを書き込み
+        rowIndex = rowIndex + 1
+    Next key
+    
+    MsgBox "処理が完了しました。"
+End Sub
