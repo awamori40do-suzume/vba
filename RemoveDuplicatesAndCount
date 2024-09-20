@@ -1,5 +1,7 @@
-Sub RemoveDuplicatesAndCountWithIColumnAboveTotal()
+Sub RemoveDuplicatesAndCountFromTestWorkbook()
     Dim ws As Worksheet
+    Dim testWorkbook As Workbook
+    Dim testFilePath As String
     Dim lastRowA As Long, lastRowI As Long
     Dim i As Long, rowIndex As Long
     Dim uniqueDict As Object
@@ -8,22 +10,36 @@ Sub RemoveDuplicatesAndCountWithIColumnAboveTotal()
     Dim item As Variant
     Dim totalRow As Long
     
-    Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
-    lastRowA = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
-    totalRow = ws.Columns(9).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row ' I列で「合計」を探す
+    ' 現在のブックのシートを設定
+    Set ws = ThisWorkbook.Sheets(1)
     
-    If totalRow = 0 Then
-        MsgBox "I列に「合計」が見つかりません。", vbExclamation
+    ' 同じディレクトリにあるテスト.xslmファイルのパスを取得
+    testFilePath = ThisWorkbook.Path & "\テスト.xslm"
+    
+    ' テスト.xslmを開く
+    On Error Resume Next
+    Set testWorkbook = Workbooks.Open(testFilePath)
+    On Error GoTo 0
+    
+    If testWorkbook Is Nothing Then
+        MsgBox "テスト.xslmファイルが見つかりません。", vbExclamation
         Exit Sub
     End If
     
-    lastRowI = totalRow - 1 ' I列の最終行を「合計」の直前に設定
-    Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
+    ' テスト.xslmのシート1を取得
+    Dim testWs As Worksheet
+    Set testWs = testWorkbook.Sheets(1)
     
-    ' A列のデータを走査し、カンマで区切って個別にカウント
+    ' テスト.xslmのA列の最終行を取得
+    lastRowA = testWs.Cells(testWs.Rows.Count, 1).End(xlUp).Row
+    
+    ' Dictionaryオブジェクトを作成
+    Set uniqueDict = CreateObject("Scripting.Dictionary")
+    
+    ' テスト.xslmのA列のデータを走査し、カンマで区切って個別にカウント
     For i = 1 To lastRowA
         ' A列のセルの値をカンマで分割
-        items = Split(ws.Cells(i, 1).Value, ",")
+        items = Split(testWs.Cells(i, 1).Value, ",")
         
         ' 分割した各項目を走査してカウント
         For Each item In items
@@ -37,6 +53,20 @@ Sub RemoveDuplicatesAndCountWithIColumnAboveTotal()
             End If
         Next item
     Next i
+    
+    ' テスト.xslmを閉じる
+    testWorkbook.Close False
+    
+    ' I列で「合計」を探す
+    totalRow = ws.Columns(9).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row
+    
+    If totalRow = 0 Then
+        MsgBox "I列に「合計」が見つかりません。", vbExclamation
+        Exit Sub
+    End If
+    
+    ' I列の最終行を「合計」の直前に設定
+    lastRowI = totalRow - 1
     
     ' B列とC列にデータを書き込み
     rowIndex = 1
