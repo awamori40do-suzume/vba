@@ -53,7 +53,9 @@ Sub RemoveDuplicatesAndCountWithIColumn()
     ' I列に存在しないB列の品目をI列末尾に追加
     rowIndex = lastRowI + 1
     For Each key In uniqueDict.Keys
-        ws.Cells(rowIndex, 9).Value = key ' I列の末尾に追加
+        ' セルの挿入 (空行を追加してからデータを挿入)
+        ws.Rows(rowIndex).Insert Shift:=xlDown
+        ws.Cells(rowIndex, 9).Value = key ' I列に値を追加
         ws.Cells(rowIndex, 10).Value = uniqueDict(key) ' その横にカウントを追加
         rowIndex = rowIndex + 1
     Next key
