@@ -3,13 +3,14 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     Dim testWorkbook As Workbook
     Dim testFilePath As String
     Dim testFileName As String
-    Dim lastRowA As Long, lastRowI As Long
+    Dim lastRowA As Long, lastRowB As Long
+    Dim lastRowI As Long, lastRowK As Long
     Dim i As Long, rowIndex As Long
-    Dim uniqueDict As Object
+    Dim uniqueDictA As Object, uniqueDictB As Object
     Dim key As Variant
     Dim items() As String
     Dim item As Variant
-    Dim totalRow As Long
+    Dim totalRowI As Long, totalRowK As Long
     
     ' 現在のブックのシートを設定
     Set ws = ThisWorkbook.Sheets(1)
@@ -39,13 +40,15 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     Dim testWs As Worksheet
     Set testWs = testWorkbook.Sheets(1)
     
-    ' テストファイルのA列の最終行を取得
+    ' テストファイルのA列とB列の最終行を取得
     lastRowA = testWs.Cells(testWs.Rows.Count, 1).End(xlUp).Row
+    lastRowB = testWs.Cells(testWs.Rows.Count, 2).End(xlUp).Row
     
     ' Dictionaryオブジェクトを作成
-    Set uniqueDict = CreateObject("Scripting.Dictionary")
+    Set uniqueDictA = CreateObject("Scripting.Dictionary")
+    Set uniqueDictB = CreateObject("Scripting.Dictionary")
     
-    ' テストファイルのA列のデータを走査し、カンマで区切って個別にカウント
+    ' A列のデータを走査し、カンマで区切って個別にカウント
     For i = 1 To lastRowA
         ' A列のセルの値をカンマで分割
         items = Split(testWs.Cells(i, 1).Value, ",")
@@ -54,10 +57,28 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
         For Each item In items
             item = Trim(item) ' 余分なスペースを削除
             If item <> "" Then
-                If Not uniqueDict.Exists(item) Then
-                    uniqueDict.Add item, 1 ' 初めての値を追加
+                If Not uniqueDictA.Exists(item) Then
+                    uniqueDictA.Add item, 1 ' 初めての値を追加
                 Else
-                    uniqueDict(item) = uniqueDict(item) + 1 ' カウントを増加
+                    uniqueDictA(item) = uniqueDictA(item) + 1 ' カウントを増加
+                End If
+            End If
+        Next item
+    Next i
+    
+    ' B列のデータを走査し、カンマで区切って個別にカウント
+    For i = 1 To lastRowB
+        ' B列のセルの値をカンマで分割
+        items = Split(testWs.Cells(i, 2).Value, ",")
+        
+        ' 分割した各項目を走査してカウント
+        For Each item In items
+            item = Trim(item) ' 余分なスペースを削除
+            If item <> "" Then
+                If Not uniqueDictB.Exists(item) Then
+                    uniqueDictB.Add item, 1 ' 初めての値を追加
+                Else
+                    uniqueDictB(item) = uniqueDictB(item) + 1 ' カウントを増加
                 End If
             End If
         Next item
@@ -67,42 +88,73 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     testWorkbook.Close False
     
     ' I列で「合計」を探す
-    totalRow = ws.Columns(9).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row
+    totalRowI = ws.Columns(9).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row
+    totalRowK = ws.Columns(11).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row
     
-    If totalRow = 0 Then
-        MsgBox "I列に「合計」が見つかりません。", vbExclamation
+    If totalRowI = 0 Or totalRowK = 0 Then
+        MsgBox "I列またはK列に「合計」が見つかりません。", vbExclamation
         Exit Sub
     End If
     
-    ' I列の最終行を「合計」の直前に設定
-    lastRowI = totalRow - 1
+    ' I列とK列の最終行を「合計」の直前に設定
+    lastRowI = totalRowI - 1
+    lastRowK = totalRowK - 1
     
-    ' B列とC列にデータを書き込み
+    ' B列とC列にデータを書き込み (A列のデータ)
     rowIndex = 1
-    For Each key In uniqueDict.Keys
+    For Each key In uniqueDictA.Keys
         ws.Cells(rowIndex, 2).Value = key ' B列に値を転記
-        ws.Cells(rowIndex, 3).Value = uniqueDict(key) ' C列にカウントを転記
+        ws.Cells(rowIndex, 3).Value = uniqueDictA(key) ' C列にカウントを転記
         rowIndex = rowIndex + 1
     Next key
     
-    ' I列に存在するデータに対応してカウントをJ列に書き込み
+    ' D列とF列にデータを書き込み (B列のデータ)
+    rowIndex = 1
+    For Each key In uniqueDictB.Keys
+        ws.Cells(rowIndex, 4).Value = key ' D列に値を転記
+        ws.Cells(rowIndex, 6).Value = uniqueDictB(key) ' F列にカウントを転記
+        rowIndex = rowIndex + 1
+    Next key
+    
+    ' I列に存在するデータに対応してカウントをJ列に書き込み (A列のデータ)
     For i = 1 To lastRowI
         key = ws.Cells(i, 9).Value ' I列の値
-        If uniqueDict.Exists(key) Then
-            ws.Cells(i, 10).Value = uniqueDict(key) ' J列にカウントを書き込み
-            uniqueDict.Remove key ' カウント済みのデータは削除
+        If uniqueDictA.Exists(key) Then
+            ws.Cells(i, 10).Value = uniqueDictA(key) ' J列にカウントを書き込み
+            uniqueDictA.Remove key ' カウント済みのデータは削除
         Else
-            ws.Cells(i, 10).Value = 0 ' B列に存在しない場合はカウントを0とする
+            ws.Cells(i, 10).Value = 0 ' A列に存在しない場合はカウントを0とする
         End If
     Next i
     
-    ' I列に存在しないB列の品目を「合計」の上に追加
-    rowIndex = totalRow ' 「合計」の位置を基準にする
-    For Each key In uniqueDict.Keys
+    ' I列に存在しないA列の品目を「合計」の上に追加
+    rowIndex = totalRowI ' 「合計」の位置を基準にする
+    For Each key In uniqueDictA.Keys
         ' セルの挿入 (「合計」の上に新しい行を追加)
         ws.Rows(rowIndex).Insert Shift:=xlDown
         ws.Cells(rowIndex, 9).Value = key ' I列に値を追加
-        ws.Cells(rowIndex, 10).Value = uniqueDict(key) ' その横にカウントを追加
+        ws.Cells(rowIndex, 10).Value = uniqueDictA(key) ' その横にカウントを追加
+        rowIndex = rowIndex + 1
+    Next key
+    
+    ' K列に存在するデータに対応してカウントをL列に書き込み (B列のデータ)
+    For i = 1 To lastRowK
+        key = ws.Cells(i, 11).Value ' K列の値
+        If uniqueDictB.Exists(key) Then
+            ws.Cells(i, 12).Value = uniqueDictB(key) ' L列にカウントを書き込み
+            uniqueDictB.Remove key ' カウント済みのデータは削除
+        Else
+            ws.Cells(i, 12).Value = 0 ' B列に存在しない場合はカウントを0とする
+        End If
+    Next i
+    
+    ' K列に存在しないB列の品目を「合計」の上に追加
+    rowIndex = totalRowK ' 「合計」の位置を基準にする
+    For Each key In uniqueDictB.Keys
+        ' セルの挿入 (「合計」の上に新しい行を追加)
+        ws.Rows(rowIndex).Insert Shift:=xlDown
+        ws.Cells(rowIndex, 11).Value = key ' K列に値を追加
+        ws.Cells(rowIndex, 12).Value = uniqueDictB(key) ' その横にカウントを追加
         rowIndex = rowIndex + 1
     Next key
 End Sub
