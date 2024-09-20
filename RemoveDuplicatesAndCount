@@ -1,4 +1,4 @@
-Sub RemoveDuplicatesAndCountWithIColumn()
+Sub RemoveDuplicatesAndCountWithIColumnAboveTotal()
     Dim ws As Worksheet
     Dim lastRowA As Long, lastRowI As Long
     Dim i As Long, rowIndex As Long
@@ -6,11 +6,18 @@ Sub RemoveDuplicatesAndCountWithIColumn()
     Dim key As Variant
     Dim items() As String
     Dim item As Variant
-    Dim bExistsInI As Boolean
+    Dim totalRow As Long
     
     Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
     lastRowA = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
-    lastRowI = ws.Cells(ws.Rows.Count, 9).End(xlUp).Row ' I列の最終行を取得 (9列目)
+    totalRow = ws.Columns(9).Find(What:="合計", LookIn:=xlValues, LookAt:=xlWhole).Row ' I列で「合計」を探す
+    
+    If totalRow = 0 Then
+        MsgBox "I列に「合計」が見つかりません。", vbExclamation
+        Exit Sub
+    End If
+    
+    lastRowI = totalRow - 1 ' I列の最終行を「合計」の直前に設定
     Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
     
     ' A列のデータを走査し、カンマで区切って個別にカウント
@@ -50,10 +57,10 @@ Sub RemoveDuplicatesAndCountWithIColumn()
         End If
     Next i
     
-    ' I列に存在しないB列の品目をI列末尾に追加
-    rowIndex = lastRowI + 1
+    ' I列に存在しないB列の品目を「合計」の上に追加
+    rowIndex = totalRow ' 「合計」の位置を基準にする
     For Each key In uniqueDict.Keys
-        ' セルの挿入 (空行を追加してからデータを挿入)
+        ' セルの挿入 (「合計」の上に新しい行を追加)
         ws.Rows(rowIndex).Insert Shift:=xlDown
         ws.Cells(rowIndex, 9).Value = key ' I列に値を追加
         ws.Cells(rowIndex, 10).Value = uniqueDict(key) ' その横にカウントを追加
