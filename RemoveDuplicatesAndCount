@@ -1,7 +1,7 @@
-Sub CompareBandIAndCount()
+Sub RemoveDuplicatesAndCountWithIColumn()
     Dim ws As Worksheet
-    Dim lastRowB As Long, lastRowI As Long, rowIndex As Long
-    Dim i As Long
+    Dim lastRowA As Long, lastRowI As Long
+    Dim i As Long, rowIndex As Long
     Dim uniqueDict As Object
     Dim key As Variant
     Dim items() As String
@@ -9,14 +9,14 @@ Sub CompareBandIAndCount()
     Dim bExistsInI As Boolean
     
     Set ws = ThisWorkbook.Sheets(1) ' 対象のシートを指定
-    lastRowB = ws.Cells(ws.Rows.Count, 2).End(xlUp).Row ' B列の最終行を取得
+    lastRowA = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' A列の最終行を取得
     lastRowI = ws.Cells(ws.Rows.Count, 9).End(xlUp).Row ' I列の最終行を取得 (9列目)
     Set uniqueDict = CreateObject("Scripting.Dictionary") ' Dictionaryオブジェクトを作成
     
-    ' B列のデータを走査し、カウント
-    For i = 1 To lastRowB
-        ' B列のセルの値をカンマで分割
-        items = Split(ws.Cells(i, 2).Value, ",")
+    ' A列のデータを走査し、カンマで区切って個別にカウント
+    For i = 1 To lastRowA
+        ' A列のセルの値をカンマで分割
+        items = Split(ws.Cells(i, 1).Value, ",")
         
         ' 分割した各項目を走査してカウント
         For Each item In items
@@ -31,11 +31,19 @@ Sub CompareBandIAndCount()
         Next item
     Next i
     
-    ' I列のデータに対応してカウントをJ列に書き込む
+    ' B列とC列にデータを書き込み
+    rowIndex = 1
+    For Each key In uniqueDict.Keys
+        ws.Cells(rowIndex, 2).Value = key ' B列に値を転記
+        ws.Cells(rowIndex, 3).Value = uniqueDict(key) ' C列にカウントを転記
+        rowIndex = rowIndex + 1
+    Next key
+    
+    ' I列に存在するデータに対応してカウントをJ列に書き込み
     For i = 1 To lastRowI
         key = ws.Cells(i, 9).Value ' I列の値
         If uniqueDict.Exists(key) Then
-            ws.Cells(i, 10).Value = uniqueDict(key) ' J列にカウントを書き込む
+            ws.Cells(i, 10).Value = uniqueDict(key) ' J列にカウントを書き込み
             uniqueDict.Remove key ' カウント済みのデータは削除
         Else
             ws.Cells(i, 10).Value = 0 ' B列に存在しない場合はカウントを0とする
