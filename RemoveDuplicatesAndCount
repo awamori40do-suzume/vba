@@ -14,7 +14,12 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     
     ' 現在のブックのシートを設定
     Set ws = ThisWorkbook.Sheets(1)
-    
+        ' シートの参照設定
+    Set ws1 = ThisWorkbook.Sheets("Sheet1")
+    Set ws2 = ThisWorkbook.Sheets("Sheet2")
+    Set ws3 = ThisWorkbook.Sheets("Sheet3")
+    Set ws4 = ThisWorkbook.Sheets("Sheet4")
+
     ' InputBoxでテストファイルの名前を入力させる
     testFileName = InputBox("テストファイルの名前を入力してください（拡張子も含めてください）", "ファイル名の入力")
     
