@@ -3,7 +3,7 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     Dim testWorkbook As Workbook
     Dim testFilePath As String
     Dim testFileName As String
-    Dim lastRowA As Long, lastRowB As Long, lastRowC As Long
+    Dim lastRowAt As Long, lastRowB As Long, lastRowC As Long
     Dim lastRowI As Long, lastRowK As Long, lastRowM As Long
     Dim i As Long, rowIndex As Long
     Dim uniqueDictA As Object, uniqueDictB As Object, uniqueDictC As Object
@@ -216,3 +216,100 @@ Sub RemoveDuplicatesAndCountFromTestWorkbook()
     
     MsgBox "処理が完了しました。"
 End Sub
+
+Sub RemoveDuplicatesAndCountWithPrices()
+    Dim ws As Worksheet
+    Dim testWorkbook As Workbook
+    Dim testFilePath As String
+    Dim testFileName As String
+    Dim lastRowA As Long, lastRowD As Long
+    Dim i As Long
+    Dim uniqueDict As Object
+    Dim items() As String
+    Dim item As Variant
+    Dim price As String
+    Dim productPricePair As String
+    
+    ' シート2に出力する
+    Dim wsOutput As Worksheet
+    Set wsOutput = ThisWorkbook.Sheets(2)
+    
+    ' 現在のブックのシートを設定
+    Set ws = ThisWorkbook.Sheets(1)
+    
+    ' InputBoxでテストファイルの名前を入力させる
+    testFileName = InputBox("テストファイルの名前を入力してください（拡張子も含めてください）", "ファイル名の入力")
+    
+    If testFileName = "" Then
+        MsgBox "ファイル名が入力されていません。処理を中止します。", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 同じディレクトリにある指定されたファイルのパスを取得
+    testFilePath = ThisWorkbook.Path & "\" & testFileName
+    
+    ' 指定されたファイルを開く
+    On Error Resume Next
+    Set testWorkbook = Workbooks.Open(testFilePath)
+    On Error GoTo 0
+    
+    If testWorkbook Is Nothing Then
+        MsgBox "指定されたファイルが見つかりません: " & testFileName, vbExclamation
+        Exit Sub
+    End If
+    
+    ' テストファイルのシート1を取得
+    Dim testWs As Worksheet
+    Set testWs = testWorkbook.Sheets(1)
+    
+    ' テストファイルのA列とD列の最終行を取得
+    lastRowA = testWs.Cells(testWs.Rows.Count, 1).End(xlUp).Row
+    lastRowD = testWs.Cells(testWs.Rows.Count, 4).End(xlUp).Row
+    
+    If lastRowA <> lastRowD Then
+        MsgBox "A列とD列の行数が一致しません。処理を中止します。", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Dictionaryオブジェクトを作成
+    Set uniqueDict = CreateObject("Scripting.Dictionary")
+    
+    ' A列の商品データとD列の価格を走査し、カンマで区切ってそれぞれをカウント
+    For i = 1 To lastRowA
+        ' A列の商品名をカンマで分割
+        items = Split(testWs.Cells(i, 1).Value, ",")
+        ' D列の価格を取得
+        price = Trim(testWs.Cells(i, 4).Value)
+        
+        ' 各商品名を走査し、商品名と価格のペアをカウント
+        For Each item In items
+            item = Trim(item) ' 余分なスペースを削除
+            If item <> "" Then
+                ' 商品名と価格を組み合わせてペアにする
+                productPricePair = item & " - " & price
+                If Not uniqueDict.Exists(productPricePair) Then
+                    uniqueDict.Add productPricePair, 1 ' 初めての値を追加
+                Else
+                    uniqueDict(productPricePair) = uniqueDict(productPricePair) + 1 ' カウントを増加
+                End If
+            End If
+        Next item
+    Next i
+    
+    ' テストファイルを閉じる
+    testWorkbook.Close False
+    
+    ' 結果をシート2に出力
+    Dim rowIndex As Long
+    rowIndex = 1
+    For Each item In uniqueDict.Keys
+        wsOutput.Cells(rowIndex, 1).Value = item ' 商品名と価格のペア
+        wsOutput.Cells(rowIndex, 2).Value = uniqueDict(item) ' カウント
+        rowIndex = rowIndex + 1
+    Next item
+    
+    MsgBox "処理が完了しました。"
+End Sub
+
+
+
