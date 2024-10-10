@@ -1,0 +1,30 @@
+Sub GetH1FromWebPage()
+    Dim url As String
+    Dim xmlHttp As Object
+    Dim htmlDoc As Object
+    Dim h1Tag As Object
+    Dim a As String
+    
+    ' URLを指定
+    url = "http://hogehoge.com"
+    
+    ' HTTPリクエスト用のオブジェクトを作成
+    Set xmlHttp = CreateObject("MSXML2.XMLHTTP")
+    xmlHttp.Open "GET", url, False
+    xmlHttp.Send
+    
+    ' 取得したHTMLをHTMLDocumentオブジェクトに読み込む
+    Set htmlDoc = CreateObject("HTMLFile")
+    htmlDoc.body.innerHTML = xmlHttp.responseText
+    
+    ' <h1>タグを取得
+    Set h1Tag = htmlDoc.getElementsByTagName("h1")(0)
+    
+    ' h1タグの内容を変数aに格納
+    If Not h1Tag Is Nothing Then
+        a = h1Tag.innerText
+        MsgBox "取得した<h1>タグの内容: " & a
+    Else
+        MsgBox "<h1>タグが見つかりませんでした。"
+    End If
+End Sub
