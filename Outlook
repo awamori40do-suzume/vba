@@ -1,0 +1,63 @@
+Sub SearchEmailsWithInput()
+    Dim olApp As Outlook.Application
+    Dim olNs As Outlook.Namespace
+    Dim olFolder As Outlook.Folder
+    Dim olMail As Outlook.MailItem
+    Dim olItems As Outlook.Items
+    Dim searchFolder As String
+    Dim searchWord As String
+    Dim searchDate As Date
+    Dim itemDate As Date
+    Dim i As Integer
+
+    ' Outlookアプリケーションを取得
+    Set olApp = Outlook.Application
+    Set olNs = olApp.GetNamespace("MAPI")
+
+    ' 検索するフォルダ名をInputBoxで入力
+    searchFolder = InputBox("検索するフォルダ名を入力してください", "フォルダ選択")
+
+    ' 検索するワードをInputBoxで入力
+    searchWord = InputBox("検索する件名のキーワードを入力してください", "キーワード入力")
+
+    ' 検索する日付をInputBoxで入力
+    searchDate = InputBox("検索する日付を入力してください (YYYY/MM/DD)", "日付指定")
+
+    ' 指定されたフォルダを取得
+    On Error Resume Next
+    Set olFolder = olNs.Folders.Item("受信トレイ").Folders(searchFolder) ' 受信トレイのサブフォルダとして検索
+    On Error GoTo 0
+
+    ' フォルダが見つからない場合のエラーメッセージ
+    If olFolder Is Nothing Then
+        MsgBox "指定されたフォルダが見つかりません。", vbExclamation
+        Exit Sub
+    End If
+
+    ' フォルダ内のアイテムを取得
+    Set olItems = olFolder.Items
+
+    ' アイテムをループ
+    For i = 1 To olItems.Count
+        ' メールアイテムかどうかを確認
+        If TypeOf olItems(i) Is Outlook.MailItem Then
+            Set olMail = olItems(i)
+
+            ' メールの受信日付を取得
+            itemDate = olMail.ReceivedTime
+
+            ' 件名に検索ワードが含まれているか、かつ指定日付以降のメールかを確認
+            If InStr(olMail.Subject, searchWord) > 0 And itemDate >= searchDate Then
+                ' 件名、送信者、受信日付を表示
+                Debug.Print "件名: " & olMail.Subject & " | 送信者: " & olMail.SenderName & " | 受信日: " & itemDate
+            End If
+        End If
+    Next i
+
+    ' オブジェクトの解放
+    Set olMail = Nothing
+    Set olItems = Nothing
+    Set olFolder = Nothing
+    Set olNs = Nothing
+    Set olApp = Nothing
+End Sub
