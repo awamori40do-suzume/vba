@@ -1,0 +1,45 @@
+Sub GetAllExcelFilesData()
+    Dim FolderPath As String
+    Dim FileName As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim RowNum As Long
+    
+    ' フォルダパスを指定
+    FolderPath = "C:\Your\Folder\Path\" ' フォルダパスを変更してください
+    If Right(FolderPath, 1) <> "\" Then FolderPath = FolderPath & "\"
+    
+    ' フォルダ内の最初のExcelファイルを取得
+    FileName = Dir(FolderPath & "*.xls*")
+    
+    ' フォルダ内の全てのExcelファイルをループ
+    Do While FileName <> ""
+        ' ワークブックを開く
+        Set wb = Workbooks.Open(FolderPath & FileName)
+        
+        ' シート1を取得
+        Set ws = wb.Sheets(1)
+        
+        ' 行番号2以降のすべてのセルを取得
+        With ws
+            RowNum = .Cells(.Rows.Count, 1).End(xlUp).Row ' 最終行を取得
+            If RowNum >= 2 Then ' 行番号2以降が存在する場合
+                Set rng = .Range(.Cells(2, 1), .Cells(RowNum, .Columns.Count).End(xlToLeft))
+                ' 各セルを処理
+                For Each cell In rng
+                    Debug.Print cell.Address, cell.Value
+                Next cell
+            End If
+        End With
+        
+        ' ワークブックを閉じる（保存せずに閉じる）
+        wb.Close SaveChanges:=False
+        
+        ' 次のファイル
+        FileName = Dir
+    Loop
+    
+    MsgBox "全てのファイルを処理しました！", vbInformation
+End Sub
