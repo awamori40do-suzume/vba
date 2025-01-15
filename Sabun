@@ -49,3 +49,71 @@ NextRow:
     
     MsgBox "比較が完了しました！", vbInformation
 End Sub
+Sub CompareWebPageSourcesWithIgnoreList()
+    Dim ws1 As Worksheet, ws2 As Worksheet
+    Dim i As Long, j As Long
+    Dim urlA As String, urlB As String
+    Dim sourceA As String, sourceB As String
+    Dim ignoreList As Collection
+    Dim xmlHttp As Object
+    Dim ignoreText As String
+    
+    ' シートを指定
+    Set ws1 = ThisWorkbook.Sheets("Sheet1") ' URLが記載されたシート
+    Set ws2 = ThisWorkbook.Sheets("Sheet2") ' 無視リストが記載されたシート
+
+    ' 無視リストを取得
+    Set ignoreList = New Collection
+    For j = 1 To ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
+        ignoreList.Add ws2.Cells(j, 1).Value
+    Next j
+    
+    ' XMLHTTPオブジェクトを作成
+    Set xmlHttp = CreateObject("MSXML2.XMLHTTP.6.0")
+
+    ' A列とB列のURLを1行ずつ比較
+    For i = 1 To ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
+        ' A列とB列のURLを取得
+        urlA = ws1.Cells(i, 1).Value
+        urlB = ws1.Cells(i, 2).Value
+        
+        ' URLが空ならスキップ
+        If urlA = "" Or urlB = "" Then GoTo NextRow
+        
+        ' A列のURLからソース取得
+        On Error Resume Next
+        xmlHttp.Open "GET", urlA, False
+        xmlHttp.Send
+        sourceA = xmlHttp.responseText
+        On Error GoTo 0
+
+        ' B列のURLからソース取得
+        On Error Resume Next
+        xmlHttp.Open "GET", urlB, False
+        xmlHttp.Send
+        sourceB = xmlHttp.responseText
+        On Error GoTo 0
+
+        ' 無視リストの文字列を削除
+        For Each ignoreText In ignoreList
+            sourceA = Replace(sourceA, ignoreText, "")
+            sourceB = Replace(sourceB, ignoreText, "")
+        Next ignoreText
+
+        ' 差分をC列に出力
+        If sourceA <> sourceB Then
+            ws1.Cells(i, 3).Value = "差分あり"
+        Else
+            ws1.Cells(i, 3).Value = "一致"
+        End If
+
+NextRow:
+    Next i
+
+    ' オブジェクトを解放
+    Set xmlHttp = Nothing
+    Set ignoreList = Nothing
+    
+    MsgBox "比較が完了しました！", vbInformation
+End Sub
+
