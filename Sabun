@@ -128,6 +128,102 @@ Sub CompareWebPageSourcesWithIgnoreList()
 NextRow:
     Next i
 
+Sub CompareWebPageSourcesWithIgnoreList()
+    Dim ws1 As Worksheet, ws2 As Worksheet
+    Dim i As Long, j As Long
+    Dim urlA As String, urlB As String
+    Dim sourceA As String, sourceB As String
+    Dim ignoreList As Collection
+    Dim xmlHttp As Object
+    Dim ignoreText As Variant
+    Dim diffText As String ' 差分テキスト用変数
+    
+    ' シートを指定
+    Set ws1 = ThisWorkbook.Sheets("Sheet1") ' URLが記載されたシート
+    Set ws2 = ThisWorkbook.Sheets("Sheet2") ' 無視リストが記載されたシート
+
+    ' 無視リストを取得
+    Set ignoreList = New Collection
+    For j = 1 To ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
+        ignoreList.Add ws2.Cells(j, 1).Value ' 無視リストをCollectionに追加
+    Next j
+    
+    ' XMLHTTPオブジェクトを作成
+    Set xmlHttp = CreateObject("MSXML2.XMLHTTP.6.0")
+
+    ' A列とB列のURLを1行ずつ比較
+    For i = 1 To ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
+        ' A列とB列のURLを取得
+        urlA = ws1.Cells(i, 1).Value
+        urlB = ws1.Cells(i, 2).Value
+        
+        ' URLが空ならスキップ
+        If urlA = "" Or urlB = "" Then GoTo NextRow
+        
+        ' A列のURLからソース取得
+        On Error Resume Next
+        xmlHttp.Open "GET", urlA, False
+        xmlHttp.Send
+        sourceA = xmlHttp.responseText
+        On Error GoTo 0
+
+        ' B列のURLからソース取得
+        On Error Resume Next
+        xmlHttp.Open "GET", urlB, False
+        xmlHttp.Send
+        sourceB = xmlHttp.responseText
+        On Error GoTo 0
+
+        ' 無視リストの文字列を削除
+        For Each ignoreText In ignoreList
+            sourceA = Replace(sourceA, CStr(ignoreText), "")
+            sourceB = Replace(sourceB, CStr(ignoreText), "")
+        Next ignoreText
+
+        ' 差分を特定
+        diffText = ExtractDifferences(sourceA, sourceB)
+        
+        ' 差分テキストをC列に出力
+        ws1.Cells(i, 3).Value = diffText
+
+NextRow:
+    Next i
+
+    ' オブジェクトを解放
+    Set xmlHttp = Nothing
+    Set ignoreList = Nothing
+    
+    MsgBox "比較が完了しました！", vbInformation
+End Sub
+
+' 2つの文字列の差分を抽出する関数
+Function ExtractDifferences(str1 As String, str2 As String) As String
+    Dim diff As String
+    Dim i As Long
+    Dim minLength As Long
+    
+    diff = ""
+    minLength = Application.Min(Len(str1), Len(str2))
+    
+    ' 文字ごとに比較し、異なる部分を抽出
+    For i = 1 To minLength
+        If Mid(str1, i, 1) <> Mid(str2, i, 1) Then
+            diff = diff & Mid(str1, i, 1)
+        End If
+    Next i
+    
+    ' 残りの部分を追加
+    If Len(str1) > minLength Then
+        diff = diff & Mid(str1, minLength + 1)
+    ElseIf Len(str2) > minLength Then
+        diff = diff & Mid(str2, minLength + 1)
+    End If
+    
+    ExtractDifferences = diff
+End Function
+
+
+
     ' オブジェクトを解放
     Set xmlHttp = Nothing
     Set ignoreList = Nothing
