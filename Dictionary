@@ -1,0 +1,47 @@
+Sub ExportDuplicateRows()
+    Dim ws As Worksheet
+    Dim dict As Object
+    Dim lastRow As Long
+    Dim i As Long
+    Dim currentValue As String
+    Dim outputData As String
+    Dim filePath As String
+    Dim fileNumber As Integer
+
+    ' 現在のアクティブシートを取得
+    Set ws = ThisWorkbook.ActiveSheet
+
+    ' Dictionaryオブジェクトを使用して重複を検出
+    Set dict = CreateObject("Scripting.Dictionary")
+
+    ' 最終行を取得
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' 重複をチェックしてデータを収集
+    outputData = ""
+    For i = 1 To lastRow
+        currentValue = ws.Cells(i, "A").Value
+        If dict.exists(currentValue) Then
+            ' 重複データを取得
+            outputData = outputData & ws.Cells(i, "A").Value & vbTab & _
+                         ws.Cells(i, "B").Value & vbTab & _
+                         ws.Cells(i, "C").Value & vbCrLf
+        Else
+            dict.Add currentValue, 1
+        End If
+    Next i
+
+    ' テキストファイルのパスを設定
+    filePath = ThisWorkbook.Path & "\test.txt"
+
+    ' テキストファイルを書き込みモードで作成
+    fileNumber = FreeFile
+    Open filePath For Output As #fileNumber
+    Print #fileNumber, outputData
+    Close #fileNumber
+
+    ' 完了メッセージ
+    MsgBox "重複データをtest.txtに書き込みました。", vbInformation
+End Sub
+
+
