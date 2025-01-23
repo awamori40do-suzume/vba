@@ -1,9 +1,9 @@
 Sub ExportDuplicateRows()
     Dim ws As Worksheet
-    Dim dict As Object
+    Dim dictA As Object, dictB As Object
     Dim lastRow As Long
     Dim i As Long
-    Dim currentValue As String
+    Dim currentA As String, currentB As String
     Dim outputData As String
     Dim filePath As String
     Dim fileNumber As Integer
@@ -12,24 +12,42 @@ Sub ExportDuplicateRows()
     Set ws = ThisWorkbook.ActiveSheet
 
     ' Dictionaryオブジェクトを使用して重複を検出
-    Set dict = CreateObject("Scripting.Dictionary")
+    Set dictA = CreateObject("Scripting.Dictionary")
+    Set dictB = CreateObject("Scripting.Dictionary")
 
     ' 最終行を取得
     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
 
-    ' 重複をチェックしてデータを収集
-    outputData = ""
+    ' 重複データを収集
+    Dim duplicatesA As String, duplicatesB As String
+    duplicatesA = "Aの重複はこちら:" & vbCrLf
+    duplicatesB = "Bの重複はこちら:" & vbCrLf
+
     For i = 1 To lastRow
-        currentValue = ws.Cells(i, "A").Value
-        If dict.exists(currentValue) Then
-            ' 重複データを取得
-            outputData = outputData & ws.Cells(i, "A").Value & vbTab & _
-                         ws.Cells(i, "B").Value & vbTab & _
-                         ws.Cells(i, "C").Value & vbCrLf
-        Else
-            dict.Add currentValue, 1
+        currentA = ws.Cells(i, "A").Value
+        currentB = ws.Cells(i, "B").Value
+
+        ' A列の重複チェック
+        If dictA.exists(currentA) Then
+            duplicatesA = duplicatesA & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        ElseIf currentA <> "" Then
+            dictA.Add currentA, 1
+        End If
+
+        ' B列の重複チェック
+        If dictB.exists(currentB) Then
+            duplicatesB = duplicatesB & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        ElseIf currentB <> "" Then
+            dictB.Add currentB, 1 ' 括弧を修正
         End If
     Next i
+
+    ' テキストファイルの内容をまとめる
+    outputData = duplicatesA & vbCrLf & duplicatesB
 
     ' テキストファイルのパスを設定
     filePath = ThisWorkbook.Path & "\test.txt"
