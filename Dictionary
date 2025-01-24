@@ -62,4 +62,82 @@ Sub ExportDuplicateRows()
     MsgBox "重複データをtest.txtに書き込みました。", vbInformation
 End Sub
 
+Sub ExportFilteredDuplicateRows()
+    Dim ws As Worksheet
+    Dim dictA As Object, dictB As Object
+    Dim excludeList As Object
+    Dim lastRow As Long
+    Dim i As Long
+    Dim currentA As String, currentB As String
+    Dim outputData As String
+    Dim filePath As String
+    Dim fileNumber As Integer
+
+    ' 現在のアクティブシートを取得
+    Set ws = ThisWorkbook.ActiveSheet
+
+    ' Dictionaryオブジェクトを使用して重複を検出
+    Set dictA = CreateObject("Scripting.Dictionary")
+    Set dictB = CreateObject("Scripting.Dictionary")
+
+    ' 除外する文字列のリストを作成
+    Set excludeList = CreateObject("Scripting.Dictionary")
+    excludeList.Add "フォルダ名1", True
+    excludeList.Add "フォルダ名2", True
+    excludeList.Add "除外文字列", True
+
+    ' 最終行を取得
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' 重複データを収集
+    Dim duplicatesA As String, duplicatesB As String
+    duplicatesA = "Aの重複はこちら:" & vbCrLf
+    duplicatesB = "Bの重複はこちら:" & vbCrLf
+
+    For i = 1 To lastRow
+        currentA = ws.Cells(i, "A").Value
+        currentB = ws.Cells(i, "B").Value
+
+        ' 除外リストに含まれる場合はスキップ
+        If excludeList.exists(currentA) Or excludeList.exists(currentB) Then
+            GoTo NextRow
+        End If
+
+        ' A列の重複チェック
+        If dictA.exists(currentA) Then
+            duplicatesA = duplicatesA & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        ElseIf currentA <> "" Then
+            dictA.Add currentA, 1
+        End If
+
+        ' B列の重複チェック
+        If dictB.exists(currentB) Then
+            duplicatesB = duplicatesB & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        ElseIf currentB <> "" Then
+            dictB.Add currentB, 1
+        End If
+
+NextRow:
+    Next i
+
+    ' テキストファイルの内容をまとめる
+    outputData = duplicatesA & vbCrLf & duplicatesB
+
+    ' テキストファイルのパスを設定
+    filePath = ThisWorkbook.Path & "\test.txt"
+
+    ' テキストファイルを書き込みモードで作成
+    fileNumber = FreeFile
+    Open filePath For Output As #fileNumber
+    Print #fileNumber, outputData
+    Close #fileNumber
+
+    ' 完了メッセージ
+    MsgBox "重複データをtest.txtに書き込みました（特定データは除外）。", vbInformation
+End Sub
+
 
