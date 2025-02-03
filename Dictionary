@@ -262,3 +262,157 @@ Sub ExportDuplicateRowsUsingCOUNTIF()
         MsgBox "重複データをtest.txtに書き込みました。", vbInformation
     End If
 End Sub
+Sub ExportDuplicateRowsUsingCOUNTIF()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim filePath As String
+    Dim fileNumber As Integer
+    Dim outputData As String
+    Dim countA As Integer, countB As Integer
+    Dim errorLines As String
+    
+    ' アクティブシートを取得
+    Set ws = ThisWorkbook.ActiveSheet
+
+    ' 最終行を取得
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' 出力用の変数
+    Dim duplicatesA As String, duplicatesB As String
+    duplicatesA = "Aの重複はこちら:" & vbCrLf
+    duplicatesB = "Bの重複はこちら:" & vbCrLf
+    errorLines = "エラー（httpsで始まらない行）:" & vbCrLf
+
+    ' A列とB列の重複をCOUNTIFでチェック
+    For i = 2 To lastRow ' 1行目がヘッダーの場合、2行目から処理
+        ' A列の重複確認
+        countA = Application.WorksheetFunction.CountIf(ws.Range("A:A"), ws.Cells(i, "A").Value)
+        If countA > 1 Then
+            duplicatesA = duplicatesA & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+        ' B列の重複確認
+        countB = Application.WorksheetFunction.CountIf(ws.Range("B:B"), ws.Cells(i, "B").Value)
+        If countB > 1 Then
+            duplicatesB = duplicatesB & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+        ' A列とB列がどちらも空白なら無視
+        If Trim(ws.Cells(i, "A").Value) = "" And Trim(ws.Cells(i, "B").Value) = "" Then
+            GoTo NextRow
+        End If
+
+        ' A列またはB列の値が "https" で始まらない場合、エラー行として記録
+        If (Left(ws.Cells(i, "A").Value, 5) <> "https" And ws.Cells(i, "A").Value <> "") And _
+           (Left(ws.Cells(i, "B").Value, 5) <> "https" And ws.Cells(i, "B").Value <> "") Then
+            errorLines = errorLines & "行 " & i & ": " & _
+                         "A: " & ws.Cells(i, "A").Value & vbTab & _
+                         "B: " & ws.Cells(i, "B").Value & vbTab & _
+                         "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+NextRow:
+    Next i
+
+    ' テキストファイルの内容をまとめる
+    outputData = duplicatesA & vbCrLf & duplicatesB
+
+    ' テキストファイルのパスを設定
+    filePath = ThisWorkbook.Path & "\test.txt"
+
+    ' テキストファイルを書き込みモードで作成
+    fileNumber = FreeFile
+    Open filePath For Output As #fileNumber
+    Print #fileNumber, outputData
+    Close #fileNumber
+
+    ' 最後にエラーメッセージを表示（エラーがある場合のみ）
+    If errorLines <> "エラー（httpsで始まらない行）:" & vbCrLf Then
+        MsgBox errorLines, vbExclamation, "データエラー"
+    Else
+        MsgBox "重複データをtest.txtに書き込みました。", vbInformation
+    End If
+End Sub
+Sub ExportDuplicateRowsUsingCOUNTIF()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim filePath As String
+    Dim fileNumber As Integer
+    Dim outputData As String
+    Dim countA As Integer, countB As Integer
+    Dim errorLines As String
+    
+    ' アクティブシートを取得
+    Set ws = ThisWorkbook.ActiveSheet
+
+    ' 最終行を取得
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' 出力用の変数
+    Dim duplicatesA As String, duplicatesB As String
+    duplicatesA = "Aの重複はこちら:" & vbCrLf
+    duplicatesB = "Bの重複はこちら:" & vbCrLf
+    errorLines = "エラー（httpsで始まらない行）:" & vbCrLf
+
+    ' A列とB列の重複をCOUNTIFでチェック
+    For i = 2 To lastRow ' 1行目がヘッダーの場合、2行目から処理
+        ' A列の重複確認
+        countA = Application.WorksheetFunction.CountIf(ws.Range("A:A"), ws.Cells(i, "A").Value)
+        If countA > 1 Then
+            duplicatesA = duplicatesA & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+        ' B列の重複確認
+        countB = Application.WorksheetFunction.CountIf(ws.Range("B:B"), ws.Cells(i, "B").Value)
+        If countB > 1 Then
+            duplicatesB = duplicatesB & "A: " & ws.Cells(i, "A").Value & vbTab & _
+                          "B: " & ws.Cells(i, "B").Value & vbTab & _
+                          "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+        ' A列とB列がどちらも空白なら無視
+        If Trim(ws.Cells(i, "A").Value) = "" And Trim(ws.Cells(i, "B").Value) = "" Then
+            GoTo NextRow
+        End If
+
+        ' A列またはB列の値が "https" で始まらない場合、エラー行として記録
+        If (Left(ws.Cells(i, "A").Value, 5) <> "https" And ws.Cells(i, "A").Value <> "") And _
+           (Left(ws.Cells(i, "B").Value, 5) <> "https" And ws.Cells(i, "B").Value <> "") Then
+            errorLines = errorLines & "行 " & i & ": " & _
+                         "A: " & ws.Cells(i, "A").Value & vbTab & _
+                         "B: " & ws.Cells(i, "B").Value & vbTab & _
+                         "C: " & ws.Cells(i, "C").Value & vbCrLf
+        End If
+
+NextRow:
+    Next i
+
+    ' テキストファイルの内容をまとめる
+    outputData = duplicatesA & vbCrLf & duplicatesB
+
+    ' テキストファイルのパスを設定
+    filePath = ThisWorkbook.Path & "\test.txt"
+
+    ' テキストファイルを書き込みモードで作成
+    fileNumber = FreeFile
+    Open filePath For Output As #fileNumber
+    Print #fileNumber, outputData
+    Close #fileNumber
+
+    ' 最後にエラーメッセージを表示（エラーがある場合のみ）
+    If errorLines <> "エラー（httpsで始まらない行）:" & vbCrLf Then
+        MsgBox errorLines, vbExclamation, "データエラー"
+    Else
+        MsgBox "重複データをtest.txtに書き込みました。", vbInformation
+    End If
+End Sub
+
+
