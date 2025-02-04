@@ -1,0 +1,29 @@
+Sub CopyFolderWithTimestamp()
+    Dim fso As Object
+    Dim sourceFolder As String
+    Dim destinationFolder As String
+    Dim timestamp As String
+    
+    ' コピー元のフォルダパスを指定（適宜変更）
+    sourceFolder = "C:\Users\YourName\Desktop\SourceFolder" ' コピー元フォルダ
+    
+    ' 日付と時刻を取得（YYYYMMDD_HHMMSS 形式）
+    timestamp = Format(Now, "yyyymmdd_HHMMSS")
+    
+    ' コピー先フォルダのパスを作成
+    destinationFolder = "C:\Users\YourName\Desktop\bk_" & timestamp
+    
+    ' FileSystemObjectを作成
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' フォルダをコピー（中身も含めてコピー）
+    If fso.FolderExists(sourceFolder) Then
+        fso.CopyFolder sourceFolder, destinationFolder
+        MsgBox "フォルダのコピーが完了しました: " & destinationFolder, vbInformation
+    Else
+        MsgBox "コピー元のフォルダが見つかりません。", vbExclamation
+    End If
+    
+    ' オブジェクトを解放
+    Set fso = Nothing
+End Sub
