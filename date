@@ -25,3 +25,15 @@ else:
 
 employments = await atom.Yoshida_Test.retrieve()
 context.session.finish([e.to_dict() for e in employments])
+
+employments = await atom.Yoshida_Test.retrieve()
+results = []
+for e in employments:
+    results.append({
+        "entryNumber": e.entryNumber,
+        "firstName": e.firstName,
+        "lastName": e.lastName,
+        "email": e.email,
+        "salaryRequirements": e.salaryRequirements
+    })
+context.session.finish({"Yoshida_Test_List": results})
