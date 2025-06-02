@@ -22,3 +22,6 @@ if from_param:
 else:
     # クエリが無い場合はすべて返す
     context.session.finish({"traffic": traffic_data})
+
+employments = await atom.Yoshida_Test.retrieve()
+context.session.finish([e.to_dict() for e in employments])
