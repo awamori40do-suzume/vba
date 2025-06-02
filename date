@@ -1,0 +1,24 @@
+from datetime import datetime
+
+# サンプルデータ
+traffic_data = [
+    {"time": "2024-06-01T00:00:00Z", "bps": 1000, "pps": 200},
+    {"time": "2024-06-01T01:00:00Z", "bps": 1500, "pps": 250},
+    {"time": "2024-06-01T02:00:00Z", "bps": 1800, "pps": 270}
+]
+
+# クエリ取得（list型なので index 0 で取り出す）
+from_param = context.request.params.get("from")
+if from_param:
+    from_time_str = from_param[0]
+    try:
+        from_time = datetime.strptime(from_time_str, "%Y-%m-%dT%H:%M:%SZ")
+        # フィルタリング
+        filtered = [t for t in traffic_data if datetime.strptime(t["time"], "%Y-%m-%dT%H:%M:%SZ") >= from_time]
+        context.session.finish({"traffic": filtered})
+    except Exception as e:
+        context.session.set_status(400)
+        context.session.finish({"error": "Invalid 'from' datetime format"})
+else:
+    # クエリが無い場合はすべて返す
+    context.session.finish({"traffic": traffic_data})
