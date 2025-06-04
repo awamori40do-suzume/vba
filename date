@@ -56,3 +56,35 @@ for year in range(1900, 2101):
 # Qmonusのレスポンス
 context.session.finish({
     "dates": dates
+
+def zero_pad(n):
+    return "0" + str(n) if n < 10 else str(n)
+
+dates = []
+
+for year in range(1900, 2101):
+    for month in range(1, 13):
+        for day in range(1, 32):
+            y = str(year)
+            m = zero_pad(month)
+            d = zero_pad(day)
+            date_str = f"{y}-{m}-{d}"
+            dates.append(date_str)
+
+# クエリパラメータを取得 (?from=YYYY-MM-DD)
+from_date = context.params.get("from")
+
+# from日以降のデータをフィルタリング（指定がある場合のみ）
+if from_date:
+    dates = [d for d in dates if d >= from_date]
+
+# 上限を20件に間引き（ランダムではないが散らばる）
+total = len(dates)
+if total > 20:
+    interval = total // 20
+    dates = [dates[i] for i in range(0, total, interval)][:20]
+
+# 結果を返す
+context.session.finish({
+    "dates": dates
+})
