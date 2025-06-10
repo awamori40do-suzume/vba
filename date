@@ -129,3 +129,36 @@ ip_list = [str(ip) for ip in network.hosts()][:100]
 # 表示
 for ip in ip_list:
     print(ip)
+
+# スタブデータ
+traffic_data = [
+    {"proto": "tcp", "bps": 4000, "pps": 120},
+    {"proto": "udp", "bps": 3000, "pps": 100},
+    {"proto": "tcp", "bps": 5000, "pps": 140},
+    {"proto": "icmp", "bps": 1000, "pps": 20},
+    {"proto": "tcp", "bps": 2000, "pps": 90},
+]
+
+# クエリパラメータ取得
+proto = context.params.get("proto")  # "tcp"など
+top_n = context.params.get("topN")   # "3"など文字列で入ってくる
+
+# プロトコル指定がある場合は絞り込み
+if proto:
+    traffic_data = [d for d in traffic_data if d["proto"] == proto]
+
+# bpsで降順ソート
+traffic_data.sort(key=lambda x: x["bps"], reverse=True)
+
+# topNが指定されていたら、int変換して上位N件だけ
+if top_n:
+    try:
+        n = int(top_n)
+        traffic_data = traffic_data[:n]
+    except:
+        context.session.finish({"error": "Invalid topN parameter."})
+
+# 結果を返す
+context.session.finish({
+    "traffic": traffic_data
+})
