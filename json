@@ -30,3 +30,42 @@ for item in traffic_data["hoge"]:
 context.session.finish({
     "traffic": result
 })
+
+
+
+
+# スタブデータ
+traffic_data = [
+    {"hoge2": {"pps": 80, "test": "aaa"}},
+    {"hoge2": {"pps": 90, "test": "bbb"}},
+    {"hoge2": {"pps": 100, "test": "ccc"}}
+]
+
+# クエリパラメータ取得
+pps_param = context.params.get("pps")
+
+if not pps_param:
+    context.session.finish({
+        "error": "ppsパラメータが指定されていません"
+    })
+
+try:
+    # クエリ文字列（例: "80,90"）を整数リストに変換
+    pps_list = [int(p.strip()) for p in pps_param.split(",")]
+except Exception:
+    context.session.finish({
+        "error": "ppsは整数のカンマ区切りで指定してください",
+        "debug": pps_param
+    })
+
+# フィルタリング処理（ppsの値が指定されたものに一致するデータのみ）
+filtered_data = []
+for item in traffic_data:
+    inner = item.get("hoge2", {})
+    if inner.get("pps") in pps_list:
+        filtered_data.append(item)
+
+# 応答を返す
+context.session.finish({
+    "filtered_traffic": filtered_data
+})
