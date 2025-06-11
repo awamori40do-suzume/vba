@@ -1,0 +1,32 @@
+# ネストされたデータ構造
+traffic_data = {
+    "hoge": [
+        {"hoge2": {"pps": 80, "test": "aaa"}},
+        {"hoge2": {"pps": 90, "test": "bbb"}},
+        {"hoge2": {"pps": 100, "test": "ccc"}}
+    ]
+}
+
+# クエリパラメータ取得（例: ?pps=80,90）
+pps_filter = context.params.get("pps")  # カンマ区切りで渡す
+
+if not pps_filter:
+    context.session.finish({"error": "ppsパラメータが必要です"})
+
+# 数値のリストに変換
+try:
+    pps_list = [int(p.strip()) for p in pps_filter.split(",")]
+except:
+    context.session.finish({"error": "ppsは整数のカンマ区切りで指定してください"})
+
+# 絞り込み
+result = []
+for item in traffic_data["hoge"]:
+    pps_val = item["hoge2"]["pps"]
+    if pps_val in pps_list:
+        result.append(item["hoge2"])
+
+# 結果返却
+context.session.finish({
+    "traffic": result
+})
