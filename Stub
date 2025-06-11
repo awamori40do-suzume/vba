@@ -1,0 +1,32 @@
+# スタブデータ
+traffic_data = [
+    {"hoge2": {"pps": "80", "test": "aaa"}},
+    {"hoge2": {"pps": "90", "test": "bbb"}},
+    {"hoge2": {"pps": "100", "test": "ccc"}}
+]
+
+# クエリパラメータ取得
+pps_param = context.params.get("pps")
+
+# ppsパラメータがあるか確認
+if pps_param:
+    # リスト or 文字列 両対応
+    if isinstance(pps_param, list):
+        pps_list = [int(x) for x in pps_param]
+    else:
+        pps_list = [int(x.strip()) for x in pps_param.split(",")]
+
+    # 絞り込み
+    filtered = []
+    for entry in traffic_data:
+        try:
+            pps_value = int(entry["hoge2"]["pps"])
+            if pps_value in pps_list:
+                filtered.append(entry)
+        except:
+            continue  # 数値変換エラー時は無視
+
+    context.session.finish({"traffic": filtered})
+else:
+    # クエリが無ければ全件返す
+    context.session.finish({"traffic": traffic_data})
