@@ -27,6 +27,34 @@ if pps_param:
             continue  # 数値変換エラー時は無視
 
     context.session.finish({"traffic": filtered})
+
+
+# ppsパラメータがあるか確認
+if pps_param:
+    try:
+        # カンマで分割してstripしてint化
+        pps_list = [int(x.strip()) for x in pps_param.split(",")]
+
+        # 絞り込み
+        filtered = []
+        for entry in traffic_data:
+            try:
+                pps_value = int(entry["hoge2"]["pps"])
+                if pps_value in pps_list:
+                    filtered.append(entry)
+            except:
+                continue
+
+        context.session.finish({"traffic": filtered})
+
+    except:
+        context.session.finish({
+            "error": "ppsは整数のカンマ区切りで指定してください",
+            "debug": pps_param
+        })
+else:
+    # クエリが無ければ全件返す
+    context.session.finish({"traffic": traffic_data})
 else:
     # クエリが無ければ全件返す
     context.session.finish({"traffic": traffic_data})
