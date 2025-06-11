@@ -32,6 +32,47 @@ context.session.finish({
 })
 
 
+traffic_data = [
+    {"hoge2": {"pps": "80", "test": "aaa"}},
+    {"hoge2": {"pps": "90", "test": "bbb"}},
+    {"hoge2": {"pps": "100", "test": "ccc"}}
+]
+
+# クエリパラメータ取得
+pps_param = context.params.get("pps")
+
+# デバッグ用出力のために初期化
+pps_list = []
+
+if pps_param:
+    try:
+        # 文字列をカンマで分割し、stripして整数へ変換 → 再び文字列へ（"80"のように比較）
+        parts = pps_param.split(",")
+        pps_list = [str(int(p.strip())) for p in parts]
+    except Exception as e:
+        context.session.finish({
+            "error": "ppsは整数のカンマ区切りで指定してください",
+            "debug": {
+                "pps_param": pps_param,
+                "split_parts": parts,
+                "exception": str(e)
+            }
+        })
+
+# ppsマッチしたデータのみ抽出（pps指定があった場合）
+if pps_list:
+    filtered = []
+    for entry in traffic_data:
+        pps_value = entry["hoge2"]["pps"]
+        if pps_value in pps_list:
+            filtered.append(entry)
+else:
+    filtered = traffic_data
+
+# 結果返却
+context.session.finish({
+    "traffic": filtered
+})
 
 
 # スタブデータ
