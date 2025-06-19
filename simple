@@ -69,3 +69,50 @@ traffic_data = {
 }
 
 context.session.finish(traffic_data)
+
+
+
+# 条件に合わせてスタブ値を生成
+cache_hit = False
+total_bytes_processed = 100000
+
+# トラフィックデータの定義
+trafics = []
+
+# 各グループ（IP）に対してデータ生成
+groups = [
+    {"group": "192.168.1.1", "rank": 2, "bps_base": 130000.0, "pps_base": 1.3},
+    {"group": "192.168.1.2", "rank": 1, "bps_base": 100000.0, "pps_base": 1.0},
+    {"group": "other",        "rank": None, "bps_base": 100000.0, "pps_base": 1.5},
+]
+
+# 3件分のratesを生成
+timestamps = [
+    "2021-08-11T20:43:00Z",
+    "2021-08-11T20:44:00Z",
+    "2021-08-11T20:45:00Z"
+]
+
+for g in groups:
+    rates = []
+    for ts in timestamps:
+        rates.append({
+            "bps": g["bps_base"],
+            "pps": g["pps_base"],
+            "timestamp": ts
+        })
+    trafics.append({
+        "group": g["group"],
+        "runk": g["rank"],
+        "rates": rates
+    })
+
+# 応答データとしてまとめる
+traffic_data = {
+    "cacheHit": cache_hit,
+    "totalBytesProcessed": total_bytes_processed,
+    "trafics": trafics
+}
+
+# 応答を返す
+context.session.finish(traffic_data)
