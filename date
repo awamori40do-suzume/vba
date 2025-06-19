@@ -162,3 +162,26 @@ if top_n:
 context.session.finish({
     "traffic": traffic_data
 })
+
+
+from datetime import datetime, timedelta
+
+# クエリで受け取った文字列
+from_str = "2024-06-18T14:30:00Z"
+to_str   = "2024-06-18T14:50:00Z"
+
+# Z（UTC記号）を除いてdatetime型に変換
+from_dt = datetime.strptime(from_str, "%Y-%m-%dT%H:%M:%SZ")
+to_dt   = datetime.strptime(to_str, "%Y-%m-%dT%H:%M:%SZ")
+
+# 1分刻みで日付を生成
+result = []
+current = from_dt
+while current <= to_dt:
+    result.append(current.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    current += timedelta(minutes=1)
+
+# 結果出力
+print(result)
+print(f"生成数: {len(result)}")
+
