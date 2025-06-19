@@ -1,0 +1,74 @@
+# クエリパラメータの取得
+group_filter = context.params.get("group")
+pps_filter = context.params.get("pps")
+
+# debug用
+# context.session.log(group_filter)
+# context.session.log(pps_filter)
+
+# サンプルデータ
+traffic_data = {
+    "chachHit": False,
+    "totalBytesProcessed": 100000,
+    "trafics": [[
+        {
+            "group": "192.168.1.1",
+            "runk": 2,
+            "rates": [
+                {"bps": 133333.3, "pps": 1.3333, "timestamp": "2021-08-11T20:43:00Z"},
+                {"bps": 133333.3, "pps": 1.3333, "timestamp": "2021-08-11T20:44:00Z"},
+                {"bps": 133333.3, "pps": 1.3333, "timestamp": "2021-08-11T20:45:00Z"}
+            ]
+        },
+        {
+            "group": "192.168.1.2",
+            "runk": 1,
+            "rates": [
+                {"bps": 100000.0, "pps": 1.0, "timestamp": "2021-08-11T20:43:00Z"},
+                {"bps": 100000.0, "pps": 1.0, "timestamp": "2021-08-11T20:44:00Z"},
+                {"bps": 100000.0, "pps": 1.0, "timestamp": "2021-08-11T20:45:00Z"}
+            ]
+        },
+        {
+            "group": "other",
+            "runk": None,
+            "rates": [
+                {"bps": 100000.0, "pps": 1.5, "timestamp": "2021-08-11T20:43:00Z"},
+                {"bps": 100000.0, "pps": 1.5, "timestamp": "2021-08-11T20:44:00Z"},
+                {"bps": 100000.0, "pps": 1.5, "timestamp": "2021-08-11T20:45:00Z"}
+            ]
+        }
+    ]]
+}
+
+# 絞り込み処理
+filtered_trafics = []
+
+for trafics_group in traffic_data["trafics"]:
+    filtered_group = []
+    for entry in trafics_group:
+        # groupフィルタ
+        if group_filter and entry["group"] != group_filter:
+            continue
+
+        # ppsフィルタ（rates配下）
+        if pps_filter:
+            matched_rates = []
+            for rate in entry["rates"]:
+                if str(rate["pps"]) == str(pps_filter):
+                    matched_rates.append(rate)
+            if matched_rates:
+                entry["rates"] = matched_rates
+                filtered_group.append(entry)
+        else:
+            filtered_group.append(entry)
+
+    if filtered_group:
+        filtered_trafics.append(filtered_group)
+
+# 応答
+context.session.finish({
+    "chachHit": traffic_data["chachHit"],
+    "totalBytesProcessed": traffic_data["totalBytesProcessed"],
+    "trafics": filtered_trafics
+})
