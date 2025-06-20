@@ -116,3 +116,9 @@ traffic_data = {
 
 # 応答を返す
 context.session.finish(traffic_data)
+
+
+if "hoge" in context.request.param.keys():
+    hoge_param = context.request.param["hoge"][0]
+else:
+    hoge_param = "hoge2"
