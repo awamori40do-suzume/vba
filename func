@@ -1,0 +1,20 @@
+def generate_numbers(start: int, end: int, step: int = 1, zero_pad: int = 0) -> list:
+    """
+    指定された範囲の整数を生成する関数。
+
+    Parameters:
+        start (int): 開始値（含む）
+        end (int): 終了値（含む）
+        step (int): 増分（デフォルトは1）
+        zero_pad (int): 桁数（ゼロ埋めしたい場合）
+
+    Returns:
+        list[str or int]: ゼロ埋めされた文字列または整数のリスト
+    """
+    numbers = []
+    for i in range(start, end + 1, step):
+        if zero_pad > 0:
+            numbers.append(str(i).zfill(zero_pad))
+        else:
+            numbers.append(i)
+    return numbers
