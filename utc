@@ -1,0 +1,9 @@
+from datetime import datetime, timezone
+
+# 現在時刻をUTCで取得
+now_utc = datetime.now(timezone.utc)
+
+# ISO 8601形式にして「Z」表記に変換
+now_utc_str = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+print(now_utc_str)
