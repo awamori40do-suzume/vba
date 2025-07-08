@@ -1,0 +1,24 @@
+# データ取得
+data = {
+    "data1": get_data1(),
+    "data2": get_data2(),
+    "data3": get_data3(),
+}
+
+# 各データに紐づくリスト
+data_lists = {
+    "data1": [1, 2, 3],
+    "data2": [10, 20, 30],
+    "data3": [100, 200, 300],
+}
+
+# 有効なデータだけ抽出
+valid_keys = [key for key, value in data.items() if value is not None]
+
+# 例：有効なデータのキーと、それに紐づくリストの要素を使う
+for key in valid_keys:
+    value = data[key]
+    associated_list = data_lists[key]
+
+    for i in range(len(associated_list)):
+        print(f"{value}[{i}] + {associated_list[i]} = {str(value) + str(associated_list[i])}")
