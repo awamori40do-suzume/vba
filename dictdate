@@ -22,3 +22,18 @@ for key in valid_keys:
 
     for i in range(len(associated_list)):
         print(f"{value}[{i}] + {associated_list[i]} = {str(value) + str(associated_list[i])}")
+
+
+original = {
+    "hoge1": 1,
+    "hoge2": 2,
+    "hoge3": 3,
+    "hoge4": 4
+}
+
+keys_to_extract = ["hoge2", "hoge4"]
+
+new_dict = {key: original[key] for key in keys_to_extract if key in original}
+
+print(new_dict)
+# → {'hoge2': 2, 'hoge4': 4}
