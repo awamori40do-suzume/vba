@@ -38,3 +38,12 @@ bps = pps * packet_size_bits
 print(f"パケットサイズ: {packet_size_bytes} bytes")
 print(f"pps: {pps}")
 print(f"bps: {bps}")
+
+
+mylist = [1.333, 1.5, 1.0]
+times = 10  # 実行回数
+
+for i in range(times):
+    item = mylist[i % len(mylist)]  # ループする
+    formatted = f"{item:.10f}"      # 小数点以下10桁でフォーマット
+    print(f"{i+1}回目: {formatted}")
