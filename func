@@ -18,3 +18,23 @@ def generate_numbers(start: int, end: int, step: int = 1, zero_pad: int = 0) -> 
         else:
             numbers.append(i)
     return numbers
+
+
+import random
+
+base = 10000
+
+# ランダムな平均パケットサイズ（バイト）を仮定（例：64〜1500バイト）
+packet_size_bytes = random.randint(64, 1500)
+
+# パケットサイズをビットに換算
+packet_size_bits = packet_size_bytes * 8
+
+# base値を bps とするか pps とするか決める
+# ここでは base を pps として使う例
+pps = base
+bps = pps * packet_size_bits
+
+print(f"パケットサイズ: {packet_size_bytes} bytes")
+print(f"pps: {pps}")
+print(f"bps: {bps}")
