@@ -1,0 +1,33 @@
+# 認証チェック（x-Auth-Tokenヘッダーがないとエラーにする）
+token = context.request.headers.get("x-auth-token")
+if not token:
+    context.session.finish(401, {"error": "x-auth-token is required"})
+    return
+
+# limitとoffsetをクエリから取ってくる（文字→数値に変換）
+try:
+    limit = int(context.request.query.get("limit", 10))   # デフォルト10
+    offset = int(context.request.query.get("offset", 0))  # デフォルト0
+except ValueError:
+    context.session.finish(400, {"error": "limitとoffsetは整数にして！"})
+    return
+
+# limitが大きすぎる・小さすぎるのを防ぐ
+if limit > 100:
+    limit = 100
+elif limit < 1:
+    limit = 10
+
+if offset < 0:
+    offset = 0
+
+# CiscoNbarというクラスのデータを、offsetからlimit件だけ取得
+records = model.query("CiscoNbar").offset(offset).limit(limit).all()
+
+# レスポンスとして返す
+context.session.finish(200, {
+    "limit": limit,
+    "offset": offset,
+    "count": len(records),
+    "items": records
+})
