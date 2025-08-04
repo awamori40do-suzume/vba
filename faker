@@ -1,0 +1,12 @@
+success, status, message, token = await context.tenant.checkKeystoneInformation(request=context.session.request)
+
+print(success, status, message, token)
+
+ここから
+success, status, tenant = await context.tenant.checkTenantInstance(
+    tenantId="dummy-tenant-id",  # ← fakerのemailでもOK
+    create=True,
+    token=token  # ← ステップ②で取ったやつ
+)
+
+print(success, status, tenant)
