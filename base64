@@ -1,0 +1,39 @@
+import base64
+import os
+
+ALLOWED_EXTENSIONS = {".jpg", ".png", ".pdf", ".zip", ".pptx", ".xlsx"}
+BLOCKED_EXTENSIONS = {".bat", ".exe"}
+MAX_FILE_SIZE_MB = 3  # バイナリサイズ上限（MB）
+MAX_BASE64_SIZE_MB = 3.999  # base64文字列の上限（MB）
+
+class FileValidationError(Exception):
+    pass
+
+def validate_file(file_bytes: bytes, filename: str):
+    """
+    アップロードファイルのバリデーションを行う。
+
+    :param file_bytes: ファイル内容のバイナリ
+    :param filename: ファイル名（拡張子付き）
+    :raises FileValidationError: 検証エラーがあった場合
+    """
+
+    # 拡張子チェック
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in BLOCKED_EXTENSIONS:
+        raise FileValidationError(f"拡張子 '{ext}' のファイルはアップロードできません。")
+    if ext not in ALLOWED_EXTENSIONS:
+        raise FileValidationError(f"拡張子 '{ext}' は許可されていません。")
+
+    # バイナリサイズチェック
+    file_size = len(file_bytes)
+    if file_size > MAX_FILE_SIZE_MB * 1024 * 1024:
+        raise FileValidationError(f"ファイルサイズが {MAX_FILE_SIZE_MB}MB を超えています。")
+
+    # base64文字列長チェック
+    base64_str = base64.b64encode(file_bytes).decode("ascii")
+    base64_len = len(base64_str.encode("utf-8"))
+    if base64_len > MAX_BASE64_SIZE_MB * 1024 * 1024:
+        raise FileValidationError(f"base64エンコード後のデータが {MAX_BASE64_SIZE_MB}MB を超えています。")
+
+    return True
