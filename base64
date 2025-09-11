@@ -37,3 +37,11 @@ def validate_file(file_bytes: bytes, filename: str):
         raise FileValidationError(f"base64エンコード後のデータが {MAX_BASE64_SIZE_MB}MB を超えています。")
 
     return True
+
+with open("upload_sample.pdf", "rb") as f:
+    data = f.read()
+    try:
+        validate_file(data, "upload_sample.pdf")
+        print("アップロードOK！")
+    except FileValidationError as e:
+        print(f"バリデーションエラー：{e}")
