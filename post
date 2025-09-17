@@ -1,0 +1,11 @@
+  const body = context.request.body;
+
+  context.session.finish({
+    status_code: 200,
+    body: body
+  });
+
+
+{
+  "test": "ok"
+}
