@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "Content-Type",
+    "x-Xaas-Static-Routing",
+    "Authorization"
+  ],
+  "properties": {
+    "Content-Type": {
+      "type": "string",
+      "const": "application/json"
+    },
+    "x-Xaas-Static-Routing": {
+      "type": "string",
+      "const": "https://your.site.url"
+    },
+    "Authorization": {
+      "type": "string",
+      "const": "Authorization"
+    }
+  },
+  "additionalProperties": false
+}
