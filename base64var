@@ -1,0 +1,13 @@
+def validate_base64_size(base64_str: str) -> bool:
+    """
+    base64エンコード文字列から元のバイナリサイズを推定し、
+    3.999MB (4193234バイト) を超えていないかチェックする。
+
+    Returns:
+        True: 制限以内
+        False: 制限超過
+    """
+    MAX_BYTES = 4193234  # 3.999 MB
+    padding = base64_str.count('=')
+    estimated_original_bytes = (len(base64_str) * 3) // 4 - padding
+    return estimated_original_bytes <= MAX_BYTES
